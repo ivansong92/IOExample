@@ -1,0 +1,222 @@
+<?xml version="1.0" encoding="UTF-8" ?>   
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.i360r.content.data.mapper.SmsDataMapper">
+	
+	<resultMap 
+		id="smsSendingLogResult"
+		type="SmsSendingLog">
+		<id property="id" column="sms_sending_log_id" />
+		<result property="code" column="sms_sending_log_code"/>
+		<result property="mobile" column="sms_sending_log_mobile" typeHandler="ReverseStringTypeHandler"/>
+		<result property="content" column="sms_sending_log_content" />
+		<result property="provider" column="sms_sending_log_provider" />
+		<result property="succeed" column="sms_sending_log_is_succeed" jdbcType="CHAR" javaType="Bool" />
+		<result property="sent" column="sms_sending_log_is_sent" jdbcType="CHAR" javaType="Bool" />
+		<result property="smsType" column="sms_sending_log_sms_type" javaType="SmsCode" typeHandler="EnumIdTypeHandler"/>
+		<result property="createTime" column="sms_sending_log_create_time" />
+		<result property="sendingCount" column="sms_sending_log_sending_count" />
+		<result property="chargingCount" column="sms_sending_log_charging_count" />
+		<result property="smsFee" column="sms_sending_log_sms_fee" />
+	</resultMap>
+	
+	<resultMap id="countSmsSentResult"
+		type="SmsSendingLogBO">
+		<result property="smsType" column="count_sms_sent_type"  javaType="SmsCode" typeHandler="EnumIdTypeHandler"/>
+		<result property="sentAmount" column="count_sms_sent_amount"/>
+	</resultMap>
+	
+	<resultMap 
+		id="smsTypeResult"
+		type="SmsType">
+		<id property="id" column="sms_type_id" />
+		<result property="code" column="sms_type_code"/>
+		<result property="description" column="sms_type_description"/>
+		<result property="dailyLimit" column="sms_type_dailyLimit" />
+	</resultMap>
+	
+	<resultMap 
+		id="smsTemplateResult"
+		type="SmsTemplate">
+		<id property="id" column="sms_template_id" />
+		<result property="code" column="sms_template_code"/>
+		<result property="aliyunCode" column="sms_template_aliyun_code"/>
+		<result property="template" column="sms_template_template" />
+	</resultMap>
+	
+	<sql id="pagingLimit"> 
+		<include refid="com.i360r.content.data.mapper.CommonDataMapper.pagingLimit"/>
+	</sql>
+	
+	<sql id="countSmsSentColums">
+		cst.id AS count_sms_sent_type,
+		count(css.id) AS count_sms_sent_amount
+	</sql>
+	
+	<sql id="smsSendingLogColumns" >
+		css.id AS sms_sending_log_id,
+		css.code AS sms_sending_log_code,
+		css.mobile AS sms_sending_log_mobile,
+		css.content AS sms_sending_log_content,
+		css.provider AS sms_sending_log_provider,
+		css.is_succeed AS sms_sending_log_is_succeed,
+		css.is_sent AS sms_sending_log_is_sent,
+		css.sms_type_id AS sms_sending_log_sms_type,
+		css.create_time AS sms_sending_log_create_time,
+		css.sending_count AS sms_sending_log_sending_count,
+		css.charging_count AS sms_sending_log_charging_count,
+		css.sms_fee AS sms_sending_log_sms_fee
+	</sql>
+	
+	<sql id="smsTypeColumns" >
+		tst.id AS sms_type_id,
+		tst.code AS sms_type_code,
+		tst.description AS sms_type_description,
+		tst.daily_limit AS sms_type_dailyLimit
+	</sql>
+	
+	<sql id="smsTemplateColumns" >
+		tsatcm.id AS sms_template_id,
+		tsatcm.code AS sms_template_code,
+		tsatcm.aliyun_code AS sms_template_aliyun_code,
+		tsatcm.template AS sms_template_template
+	</sql>
+	
+	<insert 
+		id="insertSmsSendingLog" 
+		parameterType="SmsSendingLog"
+		useGeneratedKeys="true" 
+		keyProperty="id" >
+			
+		INSERT INTO t_sms_sending_log (
+			id,
+			code,
+			mobile,
+			content,
+			provider,
+			sms_type_id,
+			is_succeed,
+			is_sent,
+			create_time,
+			sending_count,
+			charging_count,
+			sms_fee
+		) VALUES (
+			#{id, javaType=long, jdbcType=BIGINT},
+			#{code, javaType=string, jdbcType=CHAR},
+			#{mobile, javaType=string, jdbcType=CHAR, typeHandler=ReverseStringTypeHandler},
+			#{content, javaType=string, jdbcType=CHAR},
+			#{provider, javaType=string, jdbcType=CHAR},
+			#{smsType.id, javaType=int, jdbcType=INTEGER},
+			#{succeed.code, javaType=string, jdbcType=CHAR},
+			#{sent.code, javaType=string, jdbcType=CHAR},
+			#{createTime, javaType=date, jdbcType=TIMESTAMP},
+			#{sendingCount, javaType=int, jdbcType=INTEGER},
+			#{chargingCount, javaType=int, jdbcType=INTEGER},
+			#{smsFee, javaType=bigdecimal, jdbcType=DECIMAL}
+			
+		)
+		
+	</insert>
+	
+	<sql id="smsSendingLogFilter" >
+	    <if test="filter.mobile != null">
+			css.mobile = #{filter.mobile, javaType=string, jdbcType=CHAR, typeHandler=ReverseStringTypeHandler} 
+		</if>
+		<if test="filter.provider != null">
+			AND css.provider = #{filter.provider, javaType=string, jdbcType=CHAR} 
+		</if>
+		<if test="filter.success != null">
+			AND css.is_succeed = #{filter.success, javaType=Bool, jdbcType=CHAR} 
+		</if>
+		<if test="filter.smsTypeId != null">
+			AND css.sms_type_id = #{filter.smsTypeId, javaType=int, jdbcType=INTEGER}
+		</if>
+		<if test="filter.createTime != null">
+			AND css.create_time <![CDATA[ >= ]]> #{filter.createTime.from, javaType=date, jdbcType=TIMESTAMP} 
+			AND css.create_time <![CDATA[ < ]]> #{filter.createTime.to, javaType=date, jdbcType=TIMESTAMP}
+		</if>
+	</sql>
+	
+	<select id="selectSmsSendingLogByFilter"
+		parameterType="map"
+		resultMap="smsSendingLogResult">
+		
+	    SELECT 
+			<include refid="smsSendingLogColumns"/>
+		FROM 
+			t_sms_sending_log css
+		<where>
+			<include refid="smsSendingLogFilter" />
+		</where>
+		ORDER BY css.id DESC
+		<include refid="pagingLimit" />
+	</select>
+	
+	<select id="countSmsSendingLogByFilter"
+		parameterType="map"
+		resultType="int">
+		
+		SELECT 
+			count(*)
+		FROM 
+			t_sms_sending_log css
+		<where>
+			<include refid="smsSendingLogFilter" />
+		</where>
+	</select>
+
+	<select id="countDailyAmountGroupBySmsType"
+		parameterType="map"
+		resultMap="countSmsSentResult">
+		SELECT 
+			<include refid="countSmsSentColums"/>
+		FROM 
+			t_sms_sending_log css
+	    	INNER JOIN t_sms_type cst ON css.sms_type_id = cst.id
+	    WHERE
+	    	date(css.create_time) = date(now())
+	    GROUP BY css.sms_type_id
+	</select>
+	
+	<update id="updateSmsSendingLog"
+		parameterType="SmsSendingLog">
+		UPDATE
+			t_sms_sending_log
+		SET 
+			is_succeed = #{succeed.code, javaType=string, jdbcType=CHAR},
+			is_sent = #{sent.code, javaType=string, jdbcType=CHAR},
+			sending_count = #{sendingCount, javaType=int, jdbcType=INTEGER},
+			charging_count = #{chargingCount, javaType=int, jdbcType=INTEGER},
+			sms_fee = #{smsFee, javaType=bigdecimal, jdbcType=DECIMAL}
+		WHERE 
+			id = #{id, javaType=long, jdbcType=BIGINT}
+	</update>
+	
+	<select id="selectSmsTypeByCode"
+		parameterType="java.lang.String"
+		resultMap="smsTypeResult">
+		
+		SELECT 
+			<include refid="smsTypeColumns"/>
+		FROM 
+			t_sms_type tst
+		<where>
+			tst.code = #{code, javaType=string, jdbcType=CHAR}
+		</where>
+	</select>
+	
+	<select id="selectSmsTemplateByCode"
+		parameterType="java.lang.String"
+		resultMap="smsTemplateResult">
+		
+		SELECT 
+			<include refid="smsTemplateColumns"/>
+		FROM 
+			t_sms_template tsatcm
+		<where>
+			tsatcm.code = #{code, javaType=string, jdbcType=CHAR}
+		</where>
+	</select>
+</mapper>   

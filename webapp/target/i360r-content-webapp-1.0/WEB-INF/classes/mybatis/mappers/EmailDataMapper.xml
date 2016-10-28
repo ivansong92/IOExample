@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8" ?>   
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+	
+<mapper namespace="com.i360r.content.data.mapper.EmailDataMapper">
+
+	<resultMap 
+		id="countEmailSentResult"
+		type="EmailSendingLogBO" >
+		<result property="emailType" column="count_email_sent_type" javaType="EmailCode" typeHandler="EnumIdTypeHandler"/>
+		<result property="sentAmount" column="count_email_sent_amount"/>
+	</resultMap>
+	
+	<resultMap 
+		id="emailTypeResult"
+		type="EmailType">
+		<id property="id" column="email_type_id" />
+		<result property="code" column="email_type_code"/>
+		<result property="description" column="email_type_description"/>
+		<result property="dailyLimit" column="email_type_dailyLimit" />
+	</resultMap>
+	
+	<sql id="emailTypeColumns" >
+		tet.id AS email_type_id,
+		tet.code AS email_type_code,
+		tet.description AS email_type_description,
+		tet.daily_limit AS email_type_dailyLimit
+	</sql>
+	
+	<sql id="countEmailSentColums">
+		cet.id AS count_email_sent_type,
+		count(cesl.id) AS count_email_sent_amount
+	</sql>
+
+	<select 
+		id="countDailyAmountGroupByEamilType"
+		parameterType="map"
+		resultMap="countEmailSentResult">
+		SELECT 
+			<include refid="countEmailSentColums"/>
+		FROM 
+			t_email_sending_log cesl
+	    	INNER JOIN t_email_type cet ON cesl.email_type_id = cet.id
+	    WHERE
+	    	date(cesl.create_time) = date(now())
+	    GROUP BY cesl.email_type_id
+	</select>
+	
+	<insert 
+		id="insertEmailSendingLog"
+		parameterType="EmailSendingLog"
+		useGeneratedKeys="true" 
+		keyProperty="id" >
+		INSERT INTO t_email_sending_log (
+			`id`,
+			`code`,
+			`addresses`,
+			`subject`,
+			`content`,
+			`is_succeed`,
+			`create_time`,
+			`is_sent`,
+			`email_type_id`
+		) VALUES (
+			#{id, javaType=long, jdbcType=BIGINT},
+			#{code, javaType=string, jdbcType=CHAR},
+			#{addresses, javaType=string, jdbcType=CHAR},
+			#{subject, javaType=string, jdbcType=CHAR},
+			#{content, javaType=string, jdbcType=CHAR},
+			#{succeed.code, javaType=string, jdbcType=CHAR},
+			#{createTime, javaType=date, jdbcType=TIMESTAMP},
+			#{sent.code, javaType=string, jdbcType=CHAR},
+			#{emailType.id, javaType=int, jdbcType=INTEGER}
+		)
+	</insert>
+
+	<update id="updateEmailSendingLog"
+		parameterType="EmailSendingLog">
+		UPDATE 
+			t_email_sending_log
+		SET
+			is_succeed = #{succeed.code, javaType=string, jdbcType=CHAR},
+			is_sent = #{sent.code, javaType=string, jdbcType=CHAR}
+		WHERE
+			id = #{id, javaType=long, jdbcType=BIGINT}
+	</update>
+	
+	<select id="selectEmailTypeByCode"
+		parameterType="java.lang.String"
+		resultMap="emailTypeResult">
+		
+		SELECT 
+			<include refid="emailTypeColumns"/>
+		FROM 
+			t_email_type tet
+		<where>
+			tet.code = #{code, javaType=string, jdbcType=CHAR}
+		</where>
+	</select>
+</mapper>

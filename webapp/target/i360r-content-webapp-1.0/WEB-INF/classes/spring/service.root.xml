@@ -1,0 +1,233 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:jaxrs="http://cxf.apache.org/jaxrs"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans 
+		http://www.springframework.org/schema/beans/spring-beans-3.1.xsd
+		http://cxf.apache.org/jaxrs http://cxf.apache.org/schemas/jaxrs.xsd">
+	
+	<bean id="crosSupportedFilter" class="com.i360r.framework.filter.cros.CrosSupportedFilter" />
+	
+	<bean id="ossService"
+		class="com.i360r.content.service.rs.OSSService"
+		parent="abstractBaseService"/>
+		
+	<jaxrs:server address="/rs/oss">
+		<jaxrs:serviceBeans>
+			<ref bean="ossService" />
+		</jaxrs:serviceBeans>
+		<jaxrs:providers>
+   			<ref bean="jacksonJaxbJsonProvider" />
+   			<ref bean="multipartProvider" />
+		</jaxrs:providers>
+	</jaxrs:server>
+	
+	<bean id="exportRecordService"
+          class="com.i360r.content.service.rs.export.ExportRecordService"
+          parent="abstractBaseService" />
+
+    <jaxrs:server address="/rs/export/record">
+        <jaxrs:serviceBeans>
+            <ref bean="exportRecordService" />
+        </jaxrs:serviceBeans>
+		<jaxrs:providers>
+			<ref bean="jacksonJaxbJsonProvider" />
+			<ref bean="defaultJsonpJaxrsWriterInterceptor" />
+		</jaxrs:providers>
+		<jaxrs:inInterceptors>
+			<ref bean="defaultJsonpInInterceptor"/>
+	    </jaxrs:inInterceptors>
+	    <jaxrs:outInterceptors>
+	    	<ref bean="defaultJsonpPostStreamInterceptor"/>
+	    </jaxrs:outInterceptors>		
+    </jaxrs:server>
+	
+	<bean id="exportInternalService"
+		class="com.i360r.content.service.api.internal.rs.export.ExportInternalService"/>
+		
+	<jaxrs:server address="/rs/internal/export/record">
+		<jaxrs:serviceBeans>
+			<ref bean="exportInternalService" />
+		</jaxrs:serviceBeans>
+		<jaxrs:providers>
+   			<ref bean="jacksonJaxbJsonProvider" />
+		</jaxrs:providers>
+	</jaxrs:server>
+	
+	<bean id="OSSInternalService"
+		class="com.i360r.content.service.api.internal.rs.oss.OSSInternalService"/>
+		
+	<jaxrs:server address="/rs/internal/oss">
+		<jaxrs:serviceBeans>
+			<ref bean="OSSInternalService" />
+		</jaxrs:serviceBeans>
+		<jaxrs:providers>
+   			<ref bean="jacksonJaxbJsonProvider" />
+		</jaxrs:providers>
+	</jaxrs:server>
+	
+	<bean id="pushService"
+		class="com.i360r.content.service.rs.push.PushService"
+		parent="abstractBaseService"/>
+		
+	<jaxrs:server address="/rs/push">
+		<jaxrs:serviceBeans>
+			<ref bean="pushService" />
+		</jaxrs:serviceBeans>
+		<jaxrs:providers>
+   			<ref bean="jacksonJaxbJsonProvider" />
+		</jaxrs:providers>
+	</jaxrs:server>
+	
+	<bean id="resourceDataService" 
+		class="com.i360r.content.service.rs.resource.ResourceDataService">
+	</bean>
+		
+	<jaxrs:server address="/rs/resource">
+		<jaxrs:serviceBeans>
+			<ref bean="resourceDataService" />
+		</jaxrs:serviceBeans>
+		<jaxrs:providers>
+			<ref bean="jacksonJaxbJsonProvider" />
+			<ref bean="defaultJsonpJaxrsWriterInterceptor" />
+		</jaxrs:providers>
+		<jaxrs:inInterceptors>
+			<ref bean="defaultJsonpInInterceptor"/>
+	    </jaxrs:inInterceptors>
+	    <jaxrs:outInterceptors>
+	    	<ref bean="defaultJsonpPostStreamInterceptor"/>
+	    </jaxrs:outInterceptors>		
+	</jaxrs:server>
+	
+	<bean id="smsSendingLogService"
+		class="com.i360r.content.service.rs.smslog.SmsSendingLogService" />
+		
+	<jaxrs:server address="/rs/sms">
+		<jaxrs:serviceBeans>
+			<ref bean="smsSendingLogService" />
+		</jaxrs:serviceBeans>
+		<jaxrs:providers>
+   			<ref bean="jacksonJaxbJsonProvider" />
+		</jaxrs:providers>
+	</jaxrs:server>
+	
+	<bean id="pushInternalService"
+		class="com.i360r.content.service.api.internal.rs.push.PushInternalService"
+		parent="abstractBaseService"/>
+		
+	<jaxrs:server address="/rs/internal/push">
+		<jaxrs:serviceBeans>
+			<ref bean="pushInternalService" />
+		</jaxrs:serviceBeans>
+		<jaxrs:providers>
+   			<ref bean="jacksonJaxbJsonProvider" />
+		</jaxrs:providers>
+	</jaxrs:server>
+	
+	<bean id="smsInternalService"
+		class="com.i360r.content.service.api.internal.rs.sms.SmsInternalService"
+		parent="abstractBaseService"/>
+		
+	<jaxrs:server address="/rs/internal/sms">
+		<jaxrs:serviceBeans>
+			<ref bean="smsInternalService" />
+		</jaxrs:serviceBeans>
+		<jaxrs:providers>
+   			<ref bean="jacksonJaxbJsonProvider" />
+		</jaxrs:providers>
+	</jaxrs:server>
+	
+	<bean id="emailInternalService"
+		class="com.i360r.content.service.api.internal.rs.email.EmailInternalService"
+		parent="abstractBaseService"/>
+		
+	<jaxrs:server address="/rs/internal/email">
+		<jaxrs:serviceBeans>
+			<ref bean="emailInternalService" />
+		</jaxrs:serviceBeans>
+		<jaxrs:providers>
+   			<ref bean="jacksonJaxbJsonProvider" />
+		</jaxrs:providers>
+	</jaxrs:server>
+	
+	<bean id="alertInternalService"
+		class="com.i360r.content.service.api.internal.rs.alert.AlertInternalService"
+		parent="abstractBaseService"/>
+		
+	<jaxrs:server address="/rs/internal/alert">
+		<jaxrs:serviceBeans>
+			<ref bean="alertInternalService" />
+		</jaxrs:serviceBeans>
+		<jaxrs:providers>
+   			<ref bean="jacksonJaxbJsonProvider" />
+		</jaxrs:providers>
+		<jaxrs:inInterceptors> 
+			<bean class="com.i360r.framework.service.interceptor.header.HeaderInInterceptor" />
+		</jaxrs:inInterceptors> 
+	</jaxrs:server>
+	
+	<bean id="automaticCallInternalService"
+	    class="com.i360r.content.service.api.internal.rs.automatic.call.AutomaticCallInternalService"
+		parent="abstractBaseService"/>
+	    
+	<jaxrs:server address="/rs/internal/automatic/call">
+		<jaxrs:serviceBeans>
+			<ref bean="automaticCallInternalService" />
+		</jaxrs:serviceBeans>
+		<jaxrs:providers>
+   			<ref bean="jacksonJaxbJsonProvider" />
+		</jaxrs:providers>
+	</jaxrs:server>
+	
+	<bean id="automaticCallService"
+		class="com.i360r.content.service.rs.automatic.call.AutomaticCallService" 
+		parent="abstractBaseService"/>
+		
+	<jaxrs:server address="/rs/automatic/call/log">
+		<jaxrs:serviceBeans>
+			<ref bean="automaticCallService" />
+		</jaxrs:serviceBeans>
+		<jaxrs:providers>
+   			<ref bean="jacksonJaxbJsonProvider" />
+		</jaxrs:providers>
+	</jaxrs:server>
+	
+	<bean id="auditService"
+          class="com.i360r.content.service.rs.audit.AuditService" />
+
+    <jaxrs:server address="/rs/audit">
+        <jaxrs:serviceBeans>
+            <ref bean="auditService" />
+        </jaxrs:serviceBeans>
+        <jaxrs:providers>
+            <ref bean="jacksonJaxbJsonProvider" />
+        </jaxrs:providers>
+    </jaxrs:server>
+    
+    <bean id="auditInternalService"
+          class="com.i360r.content.service.api.internal.rs.audit.AuditInternalService" />
+
+    <jaxrs:server address="/rs/internal/audit">
+        <jaxrs:serviceBeans>
+            <ref bean="auditInternalService" />
+        </jaxrs:serviceBeans>
+        <jaxrs:providers>
+            <ref bean="jacksonJaxbJsonProvider" />
+        </jaxrs:providers>
+    </jaxrs:server>
+	
+	
+	<bean id="mobilePushInternalService"
+		class="com.i360r.content.service.api.internal.rs.mobile.push.MobilePushInternalService"
+		parent="abstractBaseService"/>
+		
+	<jaxrs:server address="/rs/internal/mobile/push">
+		<jaxrs:serviceBeans>
+			<ref bean="mobilePushInternalService" />
+		</jaxrs:serviceBeans>
+		<jaxrs:providers>
+   			<ref bean="jacksonJaxbJsonProvider" />
+		</jaxrs:providers>
+	</jaxrs:server>
+	
+</beans>

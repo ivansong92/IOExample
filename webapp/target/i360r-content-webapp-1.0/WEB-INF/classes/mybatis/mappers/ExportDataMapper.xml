@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="UTF-8" ?>   
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.i360r.content.data.mapper.ExportDataMapper">
+	
+	<resultMap 
+		id="exportRecordResult"
+		type="ExportRecord">
+		<id property="id" column="export_record_id" />
+		<result property="employeeCode" column="export_record_employee_code"/>
+		<result property="employeePositionCode" column="export_record_employee_position_code"/>
+		<result property="fileName" column="export_record_file_name" />
+		<result property="downloadUrl" column="export_record_download_url" />
+		<result property="processRate" column="export_record_process_rate" />
+		<result property="createTime" column="export_record_create_time"/>
+		<result property="updateTime" column="export_record_update_time"/>
+		<result property="status" column="export_record_status" javaType="ExportStatus" typeHandler="EnumIdTypeHandler"/>
+	</resultMap>
+	
+	<sql id="exportRecordColumns" >
+		er.id AS export_record_id,
+		er.employee_code AS export_record_employee_code,
+		er.employee_position_code AS export_record_employee_position_code,
+		er.file_name AS export_record_file_name,
+		er.download_url AS export_record_download_url,
+		er.process_rate AS export_record_process_rate,
+		er.create_time AS export_record_create_time,
+		er.update_time AS export_record_update_time,
+		er.status_id AS export_record_status
+	</sql>
+	
+	<insert 
+		id="insertExportRecord" 
+		parameterType="ExportRecord"
+		useGeneratedKeys="true" 
+		keyProperty="id" >
+			
+		INSERT INTO t_export_record (
+			id,
+			employee_code,
+			employee_position_code,
+			file_name,
+			download_url,
+			process_rate,
+			create_time,
+			update_time,
+			status_id
+		) VALUES (
+			#{id, javaType=long, jdbcType=BIGINT},
+			#{employeeCode, javaType=string, jdbcType=CHAR},
+			#{employeePositionCode, javaType=string},
+			#{fileName, javaType=string, jdbcType=CHAR},
+			#{downloadUrl, javaType=string, jdbcType=CHAR},
+			#{processRate, javaType=int, jdbcType=INTEGER},
+			#{createTime, javaType=date, jdbcType=TIMESTAMP},
+			#{updateTime, javaType=date, jdbcType=TIMESTAMP},
+			#{status.id, javaType=int, jdbcType=INTEGER}
+		)
+		
+	</insert>
+	
+	<select id="selectExportRecord"
+		parameterType="map"
+		resultMap="exportRecordResult">
+		
+	    SELECT 
+			<include refid="exportRecordColumns"/>
+		FROM 
+			t_export_record er
+		<where>
+			<if test="employeePositionCode != null">
+				AND er.employee_position_code = #{employeePositionCode, javaType=string, jdbcType=CHAR} 
+			</if>
+			<if test="status != null">
+				AND er.status_id = #{status.id, javaType=int, jdbcType=INTEGER}
+			</if>
+		</where>
+		ORDER BY er.create_time DESC
+	</select>
+	
+	<select id="selectExportRecordById"
+		parameterType="map"
+		resultMap="exportRecordResult">
+		
+	    SELECT 
+			<include refid="exportRecordColumns"/>
+		FROM 
+			t_export_record er
+		WHERE
+		    id = #{id, javaType=long, jdbcType=BIGINT}
+	</select>
+	
+	<select id="selectEarliestExportRecord"
+		parameterType="map"
+		resultMap="exportRecordResult">
+		
+	    SELECT 
+			<include refid="exportRecordColumns"/>
+		FROM 
+			t_export_record er
+		WHERE
+		    er.employee_position_code = #{employeePositionCode, javaType=string, jdbcType=CHAR} 
+		ORDER BY er.create_time LIMIT 1
+	</select>
+	
+	<select 
+		id="countExportRecord"
+		parameterType="map"
+		resultType="int" >
+  		
+		SELECT
+			count(*)
+		FROM
+			t_export_record er
+	    <where>
+			<if test="employeePositionCode != null">
+				AND er.employee_position_code = #{employeePositionCode, javaType=string, jdbcType=CHAR} 
+			</if>
+			<if test="status != null">
+				AND er.status_id = #{status.id, javaType=int, jdbcType=INTEGER}
+			</if>
+		</where>
+	</select>
+	
+	<update id="updateExportRecord"
+		parameterType="ExportRecord">
+		UPDATE
+			t_export_record
+		<set>
+			<if test="fileName != null">
+				file_name = #{fileName, javaType=string, jdbcType=CHAR},
+			</if>
+			<if test="downloadUrl != null">
+				download_url = #{downloadUrl, javaType=string, jdbcType=CHAR},
+			</if>
+			<if test="processRate != null">
+				process_rate = #{processRate, javaType=int, jdbcType=INTEGER},
+			</if>
+			<if test="updateTime != null">
+				update_time = #{updateTime, javaType=date, jdbcType=TIMESTAMP},
+			</if>
+			<if test="status != null">
+				status_id = #{status.id, javaType=int, jdbcType=INTEGER},
+			</if>
+	     </set> 
+		WHERE 
+			id = #{id, javaType=long, jdbcType=BIGINT}
+	</update>
+	
+	<update id="failExportRecordInProcess">
+		UPDATE
+			t_export_record
+		set
+			update_time = NOW(),
+			status_id = 3
+		WHERE 
+			status_id = 1
+	</update>
+	
+	<delete 
+		id="deleteExportRecordById" 
+		parameterType="map" >
+		DELETE FROM
+			t_export_record
+		WHERE
+			id = #{id, javaType=long, jdbcType=BIGINT}
+	</delete>
+</mapper>   

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<exception class="java.lang.Exception" code="100001">
+	<exception class="com.i360r.content.service.exception.UploadPictureException" code="100011"></exception>
+	
+	<exception class="com.i360r.framework.service.api.exception.IllegalRequestException" code="200001"></exception>
+
+	<exception class="com.i360r.content.business.api.UploadAttachmentException" code="300001"></exception>
+	
+	<exception class="com.i360r.content.service.exception.UnSupportedAppException" code="400001"></exception>
+
+</exception>

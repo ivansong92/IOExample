@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE configuration PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+	"http://mybatis.org/dtd/mybatis-3-config.dtd">
+
+<configuration>
+	<settings>
+		<setting name="cacheEnabled" value="true" />
+		<setting name="lazyLoadingEnabled" value="true" />
+	</settings>
+	
+	<typeAliases>
+		<typeAlias alias="Bool" type="com.i360r.framework.model.Bool"/>
+		
+		<typeAlias alias="AppType" type="com.i360r.content.data.model.push.AppType"/>
+		<typeAlias alias="EnumIdTypeHandler" type="com.i360r.framework.mybatis.typehandler.EnumIdTypeHandler"/>
+		
+		<typeAlias alias="PushAccount" type="com.i360r.content.data.model.push.PushAccount"/>
+		<typeAlias alias="PushAccountType" type="com.i360r.content.data.model.push.PushAccountType"/>
+		<typeAlias alias="PushMessage" type="com.i360r.content.data.model.push.PushMessage"/>
+		<typeAlias alias="PushMessageType" type="com.i360r.content.data.model.push.PushMessageType"/>
+		<typeAlias alias="ExportRecord" type="com.i360r.content.data.model.export.ExportRecord"/>
+		<typeAlias alias="ExportStatus" type="com.i360r.content.data.model.export.ExportStatus"/>
+		<typeAlias alias="SmsSendingLog" type="com.i360r.content.data.model.sms.SmsSendingLog"/>
+		<typeAlias alias="SmsCode" type="com.i360r.content.data.model.sms.SmsCode"/>
+		<typeAlias alias="SmsType" type="com.i360r.content.data.model.sms.SmsType"/>
+		<typeAlias alias= "SmsSendingLogBO" type="com.i360r.content.data.model.sms.SmsSendingLogBO"/>
+		<typeAlias alias= "SmsTemplate" type="com.i360r.content.data.model.sms.SmsTemplate"/>
+		
+		<typeAlias alias="ReverseStringTypeHandler" type="com.i360r.framework.mybatis.typehandler.ReverseStringTypeHandler"/>
+		<typeAlias alias= "AutomaticCallLog" type="com.i360r.content.data.model.automatic.call.AutomaticCallLog"/>
+		<typeAlias alias= "AutomaticCallState" type="com.i360r.content.data.model.automatic.call.AutomaticCallState"/>
+		<typeAlias alias= "AutomaticCallType" type="com.i360r.content.data.model.automatic.call.AutomaticCallType"/>
+		
+		<typeAlias alias="emailSendingLog" type="com.i360r.content.data.model.email.EmailSendingLog"/>
+		<typeAlias alias="emailSendingLogBO" type="com.i360r.content.data.model.email.EmailSendingLogBO"/>
+		<typeAlias alias="emailType" type="com.i360r.content.data.model.email.EmailType"/>
+		<typeAlias alias="emailCode" type="com.i360r.content.data.model.email.EmailCode"/>
+		
+		<typeAlias alias="alertContactGroup" type="com.i360r.content.data.model.alert.AlertContactGroup"/>
+		<typeAlias alias="alertContactGroupPerson" type="com.i360r.content.data.model.alert.AlertContactGroupPerson"/>
+		<typeAlias alias="alertContactPerson" type="com.i360r.content.data.model.alert.AlertContactPerson"/>
+		<typeAlias alias="alertSendingLog" type="com.i360r.content.data.model.alert.AlertSendingLog"/>
+		<typeAlias alias="alertSubscription" type="com.i360r.content.data.model.alert.AlertSubscription"/>
+		<typeAlias alias="alertType" type="com.i360r.content.data.model.alert.AlertType"/>
+		
+		<typeAlias alias="MobilePushApp" type="com.i360r.content.data.model.mobile.push.MobilePushApp"/>
+		<typeAlias alias="MobilePushSendingLog" type="com.i360r.content.data.model.mobile.push.MobilePushSendingLog"/>
+		<typeAlias alias="DeviceType" type="com.i360r.content.data.model.mobile.push.DeviceType"/>
+		<typeAlias alias="MessageType" type="com.i360r.content.data.model.mobile.push.MessageType"/>
+		<typeAlias alias="PushType" type="com.i360r.content.data.model.mobile.push.PushType"/>
+		<typeAlias alias="MobilePushSendingLogBO" type="com.i360r.content.data.model.mobile.push.MobilePushSendingLogBO"/>
+		
+		<typeAlias alias="Audit" type="com.i360r.content.data.model.audit.Audit"/>
+		<typeAlias alias="AuditType" type="com.i360r.content.data.model.audit.AuditType"/>
+		
+	</typeAliases>
+	
+</configuration>

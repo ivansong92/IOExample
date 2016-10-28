@@ -1,0 +1,307 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:amq="http://activemq.apache.org/schema/core"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:util="http://www.springframework.org/schema/util"
+	xmlns:hz="http://www.hazelcast.com/schema/spring"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans
+	http://www.springframework.org/schema/beans/spring-beans-3.1.xsd
+	http://www.springframework.org/schema/context 
+	http://www.springframework.org/schema/context/spring-context-3.1.xsd
+	http://activemq.apache.org/schema/core 
+	http://activemq.apache.org/schema/core/activemq-core.xsd
+	http://www.springframework.org/schema/util 
+	http://www.springframework.org/schema/util/spring-util-3.1.xsd
+	http://www.hazelcast.com/schema/spring 
+	http://www.hazelcast.com/schema/spring/hazelcast-spring-3.3.xsd">
+
+	
+	<!-- service -->
+	<util:list id="statusCodes">
+		<value>classpath:/code/error</value>
+	</util:list>
+	
+	<!-- base -->
+	<util:list id="resourceBundles">
+		<value>classpath:/locale/label</value>
+		<value>classpath:/locale/enum</value>
+		<value>classpath:/locale/message</value>
+	</util:list>
+	
+	<bean id="globalDataDao" 
+		class="com.i360r.content.data.dao.GlobalDataCacheDao"/>
+		
+	<bean id="smsDataDao" 
+		class="com.i360r.content.data.dao.SmsDataCacheDao"/>
+		
+	<bean id="emailDataDao" 
+		class="com.i360r.content.data.dao.EmailDataCacheDao"/>
+		
+	<bean id="MobilePushDataDao" 
+		class="com.i360r.content.data.dao.MobilePushDataCacheDao"/>
+		
+	<bean 
+		id="idGenerator" 
+		class="com.i360r.content.data.cache.id.IdGenerator" />
+	
+	<bean id="fileNameIdProductor" 
+		class="com.i360r.content.data.cache.id.hazelcast.FileNameIdProductor"
+		parent="abstractGlobalIdProductor"/>
+		
+	<bean id="smsSendingLogCodeProductor" 
+		class="com.i360r.content.data.cache.id.hazelcast.SmsSendingLogCodeProductor"
+		parent="abstractGlobalIdProductor"/>	
+		
+	<bean id="emailSendingLogCodeProductor" 
+		class="com.i360r.content.data.cache.id.hazelcast.EmailSendingLogCodeProductor"
+		parent="abstractGlobalIdProductor"/>
+		
+	<bean id="alertSendingLogCodeProductor" 
+		class="com.i360r.content.data.cache.id.hazelcast.AlertSendingLogCodeProductor"
+		parent="abstractGlobalIdProductor"/>	
+	
+	<bean 
+		id="emailSender" 
+		class="com.i360r.content.framework.module.adapter.email.EmailSender" 
+		destroy-method="destory"/>
+		
+	<bean 
+		id="smsSender" 
+		class="com.i360r.content.framework.module.adapter.sms.SmsSender" 
+		destroy-method="destory"/>		
+		
+	<!-- handler -->
+	<bean id="abstractBusinessHandler" class="com.i360r.content.business.AbstractBusinessHandler" abstract="true" />
+		
+	<bean id="smsSendingHandler" class="com.i360r.content.bussiness.handler.smsSending.SmsSendingHandler" 
+	    parent="abstractBusinessHandler" />
+	    
+	<bean id="emailSendingHandler" class="com.i360r.content.bussiness.handler.emailSending.EmailSendingHandler" 
+	    parent="abstractBusinessHandler" />    
+	    
+	<bean id="alertSendingHandler" class="com.i360r.content.bussiness.handler.alertSending.AlertSendingHandler" 
+	    parent="abstractBusinessHandler" />      
+	
+	<!-- 与module exportHandler同名， -->    
+	<bean id="exportContentHandler" class="com.i360r.content.business.handler.export.ExportHandler" 
+	    parent="abstractBusinessHandler" />      
+	    
+	<bean id="mobilePushHandler" class="com.i360r.content.bussiness.handler.mobile.push.MobilePushHandler" 
+	    parent="abstractBusinessHandler" />     
+	    
+	<bean 
+		id="abstractHttpClient" 
+		class="com.i360r.framework.http.client.AbstractHttpClient" 
+		abstract="true" init-method="init">
+		
+		<property name="mock">
+			<value>${content.http.client.mock:true}</value>
+		</property>
+		
+		<property name="maxConnection">
+			<value>${content.http.client.max.connection:150}</value>
+		</property>
+		
+		<property name="connectionTimeout">
+			<value>${content.http.client.connection.timeout:10000}</value>
+		</property>
+		
+		<property name="socketTimeout">
+			<value>${content.http.client.socket.timeout:10000}</value>
+		</property>
+	</bean>
+
+	<bean 
+		id="smsAdapter"
+		class="com.i360r.content.framework.module.adapter.sms.DefaultSmsAdapter" >
+		
+	    <property name="aliyunProxy" ref="aliyunProxy" />
+	    <property name="shangxunSmsProxy" ref="shangxunSmsProxy" />
+	    <property name="jktSmsProxy" ref="jktSmsProxy" />
+	    <property name="mockSmsProxy" ref="mockSmsProxy" />
+		<property name="mock">
+			<value>${content.sms.mock:true}</value>
+		</property>
+	</bean>	
+	
+	<bean 
+		id="emailAdapter" 
+		class="com.i360r.content.framework.module.adapter.email.DefaultEmailAdapter" >
+	    <property name="mock">
+			<value>${content.email.mock:true}</value>
+		</property>
+		<property name="accountName">
+			<value>${content.email.server.accountname:service@notice.jiahuanle.net}</value>
+		</property>
+		<property name="addressType">
+			<value type="int">${content.email.server.addresstype:1}</value>
+		</property>
+		<property name="replyToAddress" >
+			<value type="boolean">${content.email.server.replytoaddress:false}</value>
+		</property>
+	</bean> 
+	
+	<bean 
+		id="shangxunSmsProxy"
+		class="com.i360r.content.framework.module.proxy.sms.ShangxunSmsProxy"
+		parent="abstractHttpClient" >
+		
+		<property name="server">
+			<value>${content.sms.sx.server:http://192.168.0.1}</value>
+		</property>
+
+		<property name="checkUrl">
+			<value>${content.sms.sx.checkUrl:http://192.168.0.1}</value>
+		</property>
+
+		<property name="username">
+			<value>${content.sms.sx.username:username}</value>
+		</property>
+		
+		<property name="password">
+			<value>${content.sms.sx.password:password}</value>
+		</property>
+	</bean> 
+	
+	<bean 
+		id="jktSmsProxy"
+		class="com.i360r.content.framework.module.proxy.sms.JktSmsProxy"
+		parent="abstractHttpClient" >
+		
+		<property name="serverUrl">
+			<value>${content.sms.jkt.server.url:http://192.168.0.1}</value>
+		</property>
+
+		<property name="username">
+			<value>${content.sms.jkt.username:username}</value>
+		</property>
+		
+		<property name="password">
+			<value>${content.sms.jkt.password:password}</value>
+		</property>
+	</bean>
+	
+	<bean 
+		id="aliyunProxy"
+		class="com.i360r.content.framework.module.proxy.sms.AliyunProxy"
+		parent="abstractHttpClient" >
+		
+		<property name="serverUrl">
+			<value>${content.sms.aliyun.server:https://dm.aliyuncs.com}</value>
+		</property>
+
+		<property name="AccessKeyId">
+			<value>${aliyun.accesskey.id:exG281vvTl6t4ay0}</value>
+		</property>
+
+		<property name="accessKeySecret">
+			<value>${aliyun.accesskey.secret:zfE0uw4ch9EEIVHEvWDTLAhar6kPBO}</value>
+		</property>
+		
+		<property name="signName">
+			<value>${content.sms.aliyun.sign.name:生活半径网}</value>
+		</property>
+	</bean> 
+	
+	<bean
+		id="abstractAliyunClient"
+		class="com.i360r.content.framework.module.aliyun.AbstractAliyunClient"
+		abstract="true"
+		init-method="init"/>
+		
+	<bean
+		id="aliyunMobilePushProxy"
+		class="com.i360r.content.framework.module.proxy.mobile.push.AliyunMobilePushProxy"
+		parent="abstractAliyunClient"/>
+	
+	<bean
+		id="mobileMessageSender"
+		class="com.i360r.content.framework.module.adapter.mobile.push.MobileMessageSender"/>
+		
+	<bean
+		id="aliyunMobilePushAdapter"
+		class="com.i360r.content.framework.module.adapter.mobile.push.AliyunMobilePushAdapter"/>
+	
+	<bean 
+		id="automaticCallAdapter" 
+		class="com.i360r.content.framework.module.adapter.automatic.call.AutomaticCallAdapter"
+		init-method="init">
+		
+		<property name="restServerIp">
+		    <value>${yuntongxun.rest.server.ip:sandboxapp.cloopen.com}</value>
+		</property>
+		<property name="restServerPort">
+		    <value>${yuntongxun.rest.server.port:8883}</value>
+		</property>
+		<property name="accountSid">
+		    <value>${yuntongxun.account.sid:sid}</value>
+		</property>
+		<property name="authToken">
+		    <value>${yuntongxun.auth.token:token}</value>
+		</property>
+		<property name="appId">
+		    <value>${yuntongxun.appid:appid}</value>
+		</property>
+		<property name="callBackUrl">
+		    <value>${yuntongxun.tts.callBack:url}</value>
+		</property>
+		<property name="displayNumber">
+		    <value>${callcenter.phone.number:400-0707-360}</value>
+		</property>
+	</bean>
+	
+	<bean 
+		id="mockSmsProxy"
+		class="com.i360r.content.framework.module.proxy.sms.MockSmsProxy"
+		parent="abstractHttpClient" >
+	</bean>
+	
+	<!-- Hazelcast configuration -->
+	<hz:client id="hazelcast">
+		<hz:group 
+			name="${hazelcast.group.name}" 
+			password="${hazelcast.group.password}" />
+		
+		<hz:network connection-attempt-limit="3"
+			connection-attempt-period="3000" 
+			connection-timeout="5000"
+			redo-operation="false" 
+			smart-routing="true">
+			
+			<hz:member>${hazelcast.tcp.ip.members.1}</hz:member>
+		</hz:network>
+		
+	</hz:client>
+	
+	<bean 
+		id="abstractHazelcast" 
+		class="com.i360r.framework.hazelcast.AbstractHazelcast" 
+		abstract="true"
+		init-method="init">
+		
+		<property name="hazelcast" ref="hazelcast"/>	
+	</bean>
+	
+    <bean 
+		id="smsSendingTracker" 
+		class="com.i360r.content.data.cache.hazelcast.SmsSendingTracker" 
+		parent="abstractHazelcast"/> 
+		
+	<bean 
+		id="emailSendingTracker" 
+		class="com.i360r.content.data.cache.hazelcast.EmailSendingTracker" 
+		parent="abstractHazelcast"/>
+		
+	<bean 
+		id="mobilePushSendingTracker" 
+		class="com.i360r.content.data.cache.hazelcast.MobilePushSendingTracker" 
+		parent="abstractHazelcast"/>  	
+		
+	<bean id="automaticCallServlet" class="com.i360r.content.servlet.AutomaticCallServlet" />
+	
+	<bean id="automaticCallHandler" class="com.i360r.content.bussiness.handler.automatic.call.AutomaticCallHandler" />
+	
+	<bean id="auditHandler" class="com.i360r.content.bussiness.handler.audit.AuditHandler"/>
+	
+</beans>

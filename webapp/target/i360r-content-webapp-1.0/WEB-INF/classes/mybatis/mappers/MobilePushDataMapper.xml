@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8" ?>   
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.i360r.content.data.mapper.MobilePushDataMapper">
+
+	<resultMap id="mobilePushAppResult"
+			   type="MobilePushApp" >
+			   
+		<id property="id" column="mobile_push_app_id" />
+		<result property="code" column="mobile_push_app_code"/>
+		<result property="name" column="mobile_push_app_name" />
+		<result property="appKey" column="mobile_push_app_app_key" />
+		<result property="dailyLimit" column="mobile_push_app_daily_limit" />
+		<result property="deviceType" column="mobile_push_app_device_type" jdbcType="INTEGER" javaType="DeviceType" typeHandler="EnumIdTypeHandler"/>
+	</resultMap>
+	
+	<resultMap id="mobilePushSendingLogBOResult"
+			   type="MobilePushSendingLogBO" >
+			   
+		<result property="appCode" column="mobile_push_sending_log_bo_app_code"/>
+		<result property="sentAmount" column="mobile_push_sending_log_bo_sent_amount" />
+	</resultMap>
+	
+	<sql id="mobilePushAppColumn">
+		mpa.id AS mobile_push_app_id,
+		mpa.code AS mobile_push_app_code,
+		mpa.name AS mobile_push_app_name,
+		mpa.app_key AS mobile_push_app_app_key,
+		mpa.daily_limit AS mobile_push_app_daily_limit,
+		mpa.device_type_id AS mobile_push_app_device_type
+	</sql>
+	
+	<sql id="mobilePushSendingLogBOColumn">
+			count(mpsl.id) AS mobile_push_sending_log_bo_sent_amount,
+			mpa.code AS mobile_push_sending_log_bo_app_code
+	</sql>
+	
+	<insert id="insertSendingLog"
+		parameterType="MobilePushSendingLog"
+		useGeneratedKeys="true" 
+		keyProperty="id" >
+		
+		INSERT INTO t_mobile_push_sending_log(
+  			`id`,
+  			`title`,
+  			`content`,
+  			`create_time`,
+  			`is_success`,
+  			`receivers`,
+  			`push_option`,
+  			`response_id`,
+  			`app_id`,
+ 			`push_type_id`,
+  			`divice_type_id`,
+  			`message_type_id`
+		) VALUES (
+			#{id, javaType=int, jdbcType=INTEGER},
+			#{title, javaType=string, jdbcType=CHAR},
+			#{content, javaType=string, jdbcType=CHAR},
+			#{createTime, javaType=date, jdbcType=TIMESTAMP},
+			#{success.code, javaType=string, jdbcType=CHAR},
+			#{receivers, javaType=string, jdbcType=CHAR},
+			#{pushOption, javaType=string, jdbcType=CHAR},
+			#{responseId, javaType=string, jdbcType=CHAR},
+			#{app.id, javaType=int, jdbcType=INTEGER},
+			#{pushType.id, javaType=int, jdbcType=INTEGER},
+			#{deviceType.id, javaType=int, jdbcType=INTEGER},
+			#{messageType.id, javaType=int, jdbcType=INTEGER}
+		)
+	</insert>
+	
+	<update id="updateSendingLog"
+			parameterType="MobilePushSendingLog">
+		UPDATE
+			t_mobile_push_sending_log
+		SET
+				is_success = #{success.code, javaType=string, jdbcType=CHAR},
+				push_option = #{pushOption, javaType=string, jdbcType=CHAR},
+				response_id = #{responseId, javaType=string, jdbcType=CHAR}
+		WHERE id = #{id, javaType=int, jdbcType=INTEGER}
+	</update>
+	
+	<select id="selectAllMobilePushApp"
+			resultMap="mobilePushAppResult">
+		SELECT 
+			<include refid="mobilePushAppColumn"/>
+		FROM 
+			t_mobile_push_app mpa
+	</select>
+	
+	<select id="selectMobilePushAppByCode"
+			parameterType="map"
+			resultMap="mobilePushAppResult">
+		SELECT 
+			<include refid="mobilePushAppColumn"/>
+		FROM 
+			t_mobile_push_app mpa
+		WHERE mpa.code = #{appCode, javaType=string, jdbcType=CHAR}
+	</select>
+	
+	<select id="selectDailyPushAmountGroupByAppType"
+			resultMap="mobilePushSendingLogBOResult">
+		SELECT 
+			<include refid="mobilePushSendingLogBOColumn"/>			
+		FROM 
+			t_mobile_push_sending_log mpsl
+			INNER JOIN t_mobile_push_app mpa ON mpsl.app_id = mpa.id
+		WHERE
+	    	date(mpsl.create_time) = date(now())
+		GROUP BY mpsl.app_id
+	</select>
+
+</mapper>   

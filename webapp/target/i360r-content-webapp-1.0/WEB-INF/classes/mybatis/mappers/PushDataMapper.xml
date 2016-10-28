@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8" ?>   
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.i360r.content.data.mapper.PushDataMapper">
+
+	<resultMap id="pushAccountResult" type="PushAccount">
+		<id property="accountCode" column="push_account_account_code" />
+		<id property="baiduUserId" column="push_account_baidu_user_id" />
+		<id property="baiduChannelId" column="push_account_baidu_channel_id" />
+		<id property="appType" column="push_account_app_type" javaType="AppType" typeHandler="EnumIdTypeHandler"/>
+		<id property="accountType" column="push_account_account_type" javaType="PushAccountType" typeHandler="EnumIdTypeHandler"/>
+	</resultMap>
+
+	<sql id="pushAccountColumns">
+		pa.account_code AS push_account_account_code,
+		pa.baidu_user_id AS push_account_baidu_user_id,
+		pa.baidu_channel_id AS push_account_baidu_channel_id,
+		pa.app_type_id AS push_account_app_type,
+		pa.account_type_id AS push_account_account_type
+		
+	</sql>
+	
+	<select id="selectPushAccountByAccountCodeAndType"
+		parameterType="map"
+	 	resultMap="pushAccountResult">
+		SELECT 
+			<include refid="pushAccountColumns"/>
+		FROM 
+			t_push_account pa
+		WHERE
+			pa.account_code = #{accountCode, javaType=string, jdbcType=CHAR}
+			AND pa.account_type_id = #{accountType.id, javaType=int, jdbcType=INTEGER}
+	</select>
+	
+	<insert id="insertPushAccount" parameterType="PushAccount"
+		useGeneratedKeys="true" keyProperty="accountCode">
+		INSERT INTO t_push_account (
+			account_code,
+			baidu_user_id,
+			baidu_channel_id,
+			app_type_id,
+			account_type_id
+		) VALUES (
+			#{accountCode, javaType=string, jdbcType=CHAR},
+			#{baiduUserId, javaType=string, jdbcType=CHAR},
+			#{baiduChannelId, javaType=long, jdbcType=BIGINT},
+			#{appType.id, javaType=int, jdbcType=INTEGER},
+			#{accountType.id, javaType=int, jdbcType=INTEGER}
+		)
+	</insert>
+	
+	<delete 
+		id="deletePushAccount"
+		parameterType="map" >
+		
+		DELETE FROM
+			t_push_account 
+		WHERE
+			(account_code = #{accountCode, javaType=string, jdbcType=CHAR} AND account_type_id = #{accountType.id, javaType=int, jdbcType=INTEGER})
+			OR (baidu_user_id = #{baiduUserId, javaType=string, jdbcType=CHAR} AND baidu_channel_id = #{baiduChannelId, javaType=long, jdbcType=BIGINT})
+	</delete>
+	
+	<insert id="insertPushMessage" parameterType="PushMessage"
+		useGeneratedKeys="true" keyProperty="id">
+		INSERT INTO t_push_message (
+		id,
+		title,
+		content,
+		message,
+		create_time,
+		is_success,
+		account_code,
+		account_name,
+		baidu_user_id,
+		baidu_channel_id,
+		message_type_id,
+		app_type_id,
+		account_type_id,
+		server_name
+		) VALUES (
+		#{id, javaType=long, jdbcType=BIGINT},
+		#{title, javaType=string, jdbcType=CHAR},
+		#{content, javaType=string, jdbcType=CHAR},
+		#{message, javaType=string, jdbcType=CHAR},
+		#{createTime, javaType=date, jdbcType=TIMESTAMP},
+		#{success.code, javaType=string, jdbcType=CHAR},
+		#{accountCode, javaType=string, jdbcType=CHAR},
+		#{accountName, javaType=string, jdbcType=CHAR},
+		#{baiduUserId, javaType=string, jdbcType=CHAR},
+		#{baiduChannelId, javaType=long, jdbcType=BIGINT},
+		#{messageType.id, javaType=int, jdbcType=INTEGER},
+		#{appType.id, javaType=int, jdbcType=INTEGER},
+		#{accountType.id, javaType=int, jdbcType=INTEGER},
+		#{serverName, javaType=string, jdbcType=CHAR}
+		)
+	</insert>
+	
+	<update id="updatePushMessage" parameterType="PushMessage">
+		UPDATE 
+			t_push_message
+		<set>
+			<if test="success != null and success.code != null">
+				is_success = #{success.code, javaType=string, jdbcType=CHAR},
+			</if>
+			<if test="accountCode != null">
+				account_code = #{accountCode, javaType=string, jdbcType=CHAR},
+			</if>
+			<if test="accountName != null">
+				account_name = #{accountName, javaType=string, jdbcType=CHAR},
+			</if>
+			<if test="baiduUserId != null">
+				baidu_user_id = #{baiduUserId, javaType=string, jdbcType=CHAR},
+			</if>
+			<if test="baiduChannelId != null and baiduChannelId > 0">
+				baidu_channel_id = #{baiduChannelId, javaType=long, jdbcType=BIGINT},
+			</if>
+			<if test="appType != null and appType.id > 0">
+				app_type_id = #{appType.id, javaType=int, jdbcType=INTEGER},
+			</if>
+			<if test="accountType != null and accountType.id > 0">
+				account_type_id = #{accountType.id, javaType=int, jdbcType=INTEGER},
+			</if>
+			<if test="message != null">
+				message = #{message, javaType=string, jdbcType=CHAR},
+			</if>
+		</set>
+		WHERE 
+			id = #{id, javaType=long, jdbcType=BIGINT}
+	</update>
+
+</mapper>   

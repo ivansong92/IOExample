@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="UTF-8" ?>   
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.i360r.content.data.mapper.AlertDataMapper">
+
+	<resultMap id="alertSubscriptionResult"
+		type="AlertSubscription" >
+		<id property="id" column="alert_subscription_id"/>
+		<result property="name" column="alert_subscription_name"/>
+		<result property="createTime" column="alert_subscription_create_time"/>
+		<result property="alterType" column="alert_subscription_alert_type" javaType="AlertType" typeHandler="EnumIdTypeHandler"/>
+		
+		<association property="contactGroup" 
+			javaType="AlertContactGroup" resultMap="alertContactGroupResult"/>
+	</resultMap>
+	
+	<resultMap id="alertContactGroupResult"
+		type="AlertContactGroup" >
+		<id property="id" column="alert_contact_group_id"/>
+		<result property="name" column="alert_contact_group_name"/>
+		<result property="createTime" column="alert_contact_group_create_time"/>
+		
+		<collection property="contactGroupPersons" 
+			ofType="AlertContactGroupPerson" resultMap="alertContactGroupPersonResult"/>
+	</resultMap>
+	
+	<resultMap id="alertContactGroupPersonResult"
+		type="AlertContactGroupPerson" >
+		<id property="id" column="alert_contact_group_person_id"/>
+		<result property="smsSending" column="alert_contact_group_person_sms_sending" jdbcType="CHAR" javaType="Bool"/>
+		<result property="emailSending" column="alert_contact_group_person_email_sending" jdbcType="CHAR" javaType="Bool"/>
+		<association property="contactPerson" 
+			javaType="AlertContactPerson" resultMap="alertContactPersonResult"/>
+	</resultMap>
+	
+	<resultMap id="alertContactPersonResult"
+		type="AlertContactPerson" >
+		<id property="id" column="alert_contact_person_id"/>
+		<result property="name" column="alert_contact_person_name"/>
+		<result property="mobile" column="alert_contact_person_mobile" typeHandler="ReverseStringTypeHandler"/>
+		<result property="email" column="alert_contact_person_email"/>
+		<result property="createTime" column="alert_contact_person_create_time"/>
+	</resultMap>
+
+	<sql id="alertSubscriptionColumns">
+		tas.`id` AS alert_subscription_id,
+  		tas.`name` AS alert_subscription_name,
+  		tas.`create_time` AS alert_subscription_create_time,
+  		tas.`alert_contact_group_id` AS alert_subscription_alert_contact_group,
+  		tas.`alert_type_id` AS alert_subscription_alert_type
+	</sql>
+	
+	<sql id="alertContactGroupColumns">
+		acg.`id` AS alert_contact_group_id,
+		acg.`name` AS alert_contact_group_name,
+		acg.`create_time` AS alert_contact_group_create_time
+	</sql>
+	
+	<sql id="alertContactGroupPersonColumns">
+		acgp.`id` AS alert_contact_group_person_id,
+		acgp.`alert_contact_group_id` AS alert_contact_group_person_alert_contact_group,
+		acgp.`alert_contact_person_id` AS alert_contact_group_person_alert_contact_person,
+		acgp.`sms_sending` AS alert_contact_group_person_sms_sending,
+		acgp.`email_sending` AS alert_contact_group_person_email_sending
+	</sql>
+	
+	<sql id="alertContactPersonColumns">
+		acp.`id` AS alert_contact_person_id,
+		acp.`name` AS alert_contact_person_name,
+		acp.`mobile` AS alert_contact_person_mobile,
+		acp.`email` AS alert_contact_person_email,
+		acp.`create_time` AS alert_contact_person_create_time
+	</sql>
+
+	<insert id="insertAlertSendingLog"
+		parameterType="AlertSendingLog"
+		useGeneratedKeys="true" 
+		keyProperty="id">
+		INSERT INTO t_alert_sending_log(
+			`id`,
+			`code`,
+			`content`,	
+			`subject`,
+			`create_time`,
+			`alert_type_id`
+		) VALUES (
+			#{id, javaType=long, jdbcType=BIGINT},
+			#{code, javaType=string, jdbcType=CHAR},
+			#{content, javaType=string, jdbcType=CHAR},
+			#{subject, javaType=string, jdbcType=CHAR},
+			#{createTime, javaType=date, jdbcType=TIMESTAMP},
+			#{alertType.id, javaType=int, jdbcType=INTEGER}
+		)
+	</insert>
+	
+	<insert id="insertAlertSmsSendingLog"
+		parameterType="map">
+		INSERT INTO t_alert_sms_sending_log (
+			alert_sending_log_id,
+			sms_sending_log_id
+		) VALUES 
+			<foreach collection="smsSendingLogs" item="item" index="index" separator=","> 
+				(
+					#{alertSendingLog.id, javaType=long, jdbcType=BIGINT},
+					#{item.id, javaType=long, jdbcType=BIGINT}
+				)
+			</foreach>
+	</insert>
+	
+	<insert id="insertAlertEmailSendingLog"
+		parameterType="map">
+		INSERT INTO t_alert_email_sending_log (
+			alert_sending_log_id,
+			email_sending_log_id
+		) VALUES (
+			#{alertSendingLog.id, javaType=long, jdbcType=BIGINT},
+			#{emailSendingLog.id, javaType=long, jdbcType=BIGINT}
+		)
+	</insert>
+	
+	<select id="selectAlertSubscriptionByAlertType"
+		parameterType="map"
+		resultMap="alertSubscriptionResult">
+		SELECT 
+			<include refid="alertSubscriptionColumns"/>,
+			<include refid="alertContactGroupColumns"/>,
+			<include refid="alertContactGroupPersonColumns"/>,
+			<include refid="alertContactPersonColumns"/>
+		FROM 
+			t_alert_subscription tas
+			INNER JOIN t_alert_type at ON tas.alert_type_id = at.id
+			INNER JOIN t_alert_contact_group acg ON tas.alert_contact_group_id = acg.id
+			INNER JOIN t_alert_contact_group_person acgp ON acgp.alert_contact_group_id = acg.id
+			INNER JOIN t_alert_contact_person acp ON acgp.alert_contact_person_id = acp.id
+		WHERE
+			at.code = #{alertType.code, javaType=string, jdbcType=CHAR}
+	</select>
+</mapper>

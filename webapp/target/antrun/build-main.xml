@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<project name="maven-antrun-" default="main"  >
+<target name="main">
+  <echo message="Performing build time token replacement ..."/>
+  <copy todir="D:\git\i360r-content\webapp\target\classes" overwrite="true">
+    <fileset dir="D:\git\i360r-content\webapp\target\classes" includes="**/*.tmpl"/>
+    <mapper to="*" from="*.tmpl" type="glob"/>
+    <filterset begintoken="@" endtoken="@">
+      <filtersfile file="D:\git\i360r-content\webapp/build.properties"/>
+    </filterset>
+  </copy>
+  <echo message="Copy versioned asset files ..."/>
+  <echo message="asset.version=20161009143051" append="false" file="D:\git\i360r-content\webapp\target\classes/asset.version" force="true"/>
+</target>
+</project>

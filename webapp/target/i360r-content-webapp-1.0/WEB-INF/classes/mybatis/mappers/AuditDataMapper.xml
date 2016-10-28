@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8" ?>   
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.i360r.content.data.mapper.AuditDataMapper">
+
+	<resultMap
+	    id="auditResult"
+	    type="Audit">
+		    <id property="id" column="audit_id"/>		    
+		    <result property="actorName" column="audit_actor_name" />
+		    <result property="actorCode" column="audit_actor_code"/>
+		    <result property="type" column="audit_type_id" javaType="AuditType" typeHandler="EnumIdTypeHandler"/>
+		    <result property="categoryCode" column="audit_category_code"/>
+		    <result property="categoryName" column="audit_category_name"/>
+		    <result property="createTime" column="audit_create_time"/>
+		    <result property="keyword1" column="audit_keyword1"/>
+		    <result property="keyword2" column="audit_keyword2"/>
+		    <result property="keyword3" column="audit_keyword3"/>
+		    <result property="summary" column="audit_summary"/>
+	</resultMap>
+		
+	<sql id="auditColumns">
+	    aut.actor_name AS audit_actor_name,
+	    aut.id AS audit_id,
+	    aut.actor_code AS audit_actor_code,
+	    aut.type_id AS audit_type_id,
+	    aut.category_code AS audit_category_code,
+	    aut.category_name AS audit_category_name,
+	    aut.create_time AS audit_create_time,
+	    aut.keyword1 AS audit_keyword1,
+	    aut.keyword2 AS audit_keyword2,
+	    aut.keyword3 AS audit_keyword3,
+	    aut.summary AS audit_summary
+	</sql>	    
+	
+	<sql id="pagingLimit"> 
+		<include refid="com.i360r.content.data.mapper.CommonDataMapper.pagingLimit"/>
+	</sql>
+	
+	<insert 
+		id="insertAudit"
+		parameterType="Audit"
+		useGeneratedKeys="true"
+		keyProperty="id">
+		
+		INSERT INTO t_audit (
+			id,
+			actor_code,
+			actor_name,
+			type_id,
+			category_code,
+			category_name,
+			create_time,
+			keyword1,
+			keyword2,
+			keyword3,
+			summary
+		) VALUES (
+			#{id, javaType=int, jdbcType=INTEGER},
+			#{actorCode, javaType=string, jdbcType=CHAR},
+			#{actorName, javaType=string, jdbcType=CHAR},
+			#{type.id, javaType=int, jdbcType=INTEGER},
+			#{categoryCode, javaType=string, jdbcType=CHAR},
+			#{categoryName, javaType=string, jdbcType=CHAR},
+			#{createTime, javaType=date, jdbcType=TIMESTAMP},
+			#{keyword1, javaType=string, jdbcType=CHAR},
+			#{keyword2, javaType=string, jdbcType=CHAR},
+			#{keyword3, javaType=string, jdbcType=CHAR},
+			#{summary, javaType=string, jdbcType=CHAR}
+		);
+
+	</insert>
+	
+	<sql id="auditFilter" >
+	    <if test="filter.actorName != null">
+			AND aut.actor_name LIKE #{filter.actorName, javaType=string, jdbcType=CHAR}
+		</if>
+		<if test="filter.keyword != null">
+			AND (aut.keyword1 LIKE #{filter.keyword, javaType=string, jdbcType=CHAR}
+				OR aut.keyword2 LIKE #{filter.keyword, javaType=string, jdbcType=CHAR}
+				OR aut.keyword3 LIKE #{filter.keyword, javaType=string, jdbcType=CHAR})
+		</if>
+		<if test="filter.createTime != null">
+			AND (aut.create_time <![CDATA[ >= ]]> #{filter.createTime.from, javaType=date, jdbcType=TIMESTAMP}
+				AND aut.create_time <![CDATA[ < ]]> #{filter.createTime.to, javaType=date, jdbcType=TIMESTAMP})
+		</if>
+	</sql>
+	
+	<select 
+		id="selectAuditByFilter"
+		parameterType="map"
+		resultMap="auditResult">
+			
+		SELECT	
+			<include refid="auditColumns"/>
+		FROM
+			t_audit aut
+		<where>
+            <include refid="auditFilter"/>
+		</where>
+		ORDER BY aut.create_time DESC
+		<include refid="pagingLimit" />		
+	</select>
+	
+	<select 
+		id="countAuditByFilter"
+		parameterType="map"
+		resultType="int" >
+				
+		SELECT	
+			count(*)
+		FROM
+			t_audit aut
+		<where>
+            <include refid="auditFilter"/>
+		</where>
+	</select>
+	
+</mapper>   

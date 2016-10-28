@@ -1,0 +1,190 @@
+<?xml version="1.0" encoding="UTF-8" ?>   
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.i360r.content.data.mapper.AutomaticCallDataMapper">
+
+	<resultMap
+		id="automaticCallLogResult"
+		type="AutomaticCallLog" >
+		
+		<id property="id" column="automatic_call_log_id" />
+		<result property="orderNumber" column="automatic_call_log_order_number" typeHandler="ReverseStringTypeHandler" />
+		<result property="callSid" column="automatic_call_log_call_sid" />
+		<result property="calledNumber" column="automatic_call_log_called_number" typeHandler="ReverseStringTypeHandler" />
+		<result property="action" column="automatic_call_log_action" />
+		<result property="duration" column="automatic_call_log_duration" />
+		<result property="startTime" column="automatic_call_log_start_time" />
+		<result property="endTime" column="automatic_call_log_end_time" />
+		<result property="connected" column="automatic_call_log_connected" />
+		<result property="createTime" column="automatic_call_log_create_time" />
+		<result property="updateTime" column="automatic_call_log_update_time" />
+		<result property="type" column="automatic_call_log_type_id" jdbcType="INTEGER" javaType="AutomaticCallType" typeHandler="EnumIdTypeHandler" />
+		<result property="state" column="automatic_call_log_state_id" jdbcType="INTEGER" javaType="AutomaticCallState" typeHandler="EnumIdTypeHandler" />
+	</resultMap>
+		
+	<sql id="pagingLimit"> 
+		<include refid="com.i360r.content.data.mapper.CommonDataMapper.pagingLimit"/>
+	</sql>
+	
+	<sql id="automaticCallLogColumns" >
+		acl.id AS automatic_call_log_id,
+		acl.order_number AS automatic_call_log_order_number,
+		acl.call_sid AS automatic_call_log_call_sid,
+		acl.called_number AS automatic_call_log_called_number,
+		acl.action AS automatic_call_log_action,
+		acl.duration AS automatic_call_log_duration,
+		acl.start_time automatic_call_log_start_time,
+		acl.end_time AS automatic_call_log_end_time,
+		acl.connected AS automatic_call_log_connected,
+		acl.create_time AS automatic_call_log_create_time,
+		acl.update_time AS automatic_call_log_update_time,
+		acl.type_id AS automatic_call_log_type_id,
+		acl.state_id AS automatic_call_log_state_id
+	</sql>
+	
+	<sql id="automaticCallLogFilter">
+		<if test="filter.type != null and filter.type.id > 0">
+			AND acl.type_id = #{filter.type.id, javaType=int, jdbcType=INTEGER}
+		</if>
+		<if test="filter.calledNumber != null">
+			AND acl.called_number like #{filter.calledNumber, javaType=string, jdbcType=VARCHAR, typeHandler=ReverseStringTypeHandler}
+		</if>
+		<if test="filter.automaticCallDate != null and filter.automaticCallDate.from != null">
+			AND acl.update_time <![CDATA[ >= ]]> #{filter.automaticCallDate.from, javaType=date, jdbcType=DATE}
+		</if>
+		<if test="filter.automaticCallDate != null and filter.automaticCallDate.to != null">
+			AND acl.update_time <![CDATA[ < ]]> #{filter.automaticCallDate.to, javaType=date, jdbcType=DATE}
+		</if>
+	</sql>
+	
+	<insert
+		id="insertAutomaticCallLog"
+		parameterType="AutomaticCallLog"
+		useGeneratedKeys="true"
+		keyProperty="id" >
+		
+		INSERT INTO t_automatic_call_log (
+				id,
+				order_number,
+				call_sid,
+				called_number,
+				action,
+				duration,
+				start_time,
+				end_time,
+				connected,
+				create_time,
+				update_time,
+				type_id,
+				state_id
+			) VALUES (
+				#{id, javaType=int, jdbcType=INTEGER},
+				#{orderNumber, javaType=string, jdbcType=VARCHAR, typeHandler=ReverseStringTypeHandler},
+				#{callSid, javaType=string, jdbcType=CHAR},
+				#{calledNumber, javaType=string, jdbcType=VARCHAR, typeHandler=ReverseStringTypeHandler},
+				#{action, javaType=string, jdbcType=VARCHAR},
+				#{duration, javaType=int, jdbcType=INTEGER},
+				#{startTime, javaType=date, jdbcType=TIMESTAMP},
+				#{endTime, javaType=date, jdbcType=TIMESTAMP},
+				#{connected.code, javaType=string, jdbcType=CHAR},
+				#{createTime, javaType=date, jdbcType=TIMESTAMP},
+				#{updateTime, javaType=date, jdbcType=TIMESTAMP},
+				<choose>
+					<when test="type != null and type.id > 0">
+						#{type.id, javaType=int, jdbcType=INTEGER},
+					</when>
+					<otherwise>
+						null,
+					</otherwise>
+				</choose>
+				<choose>
+					<when test="state != null and state.id > 0">
+						#{state.id, javaType=int, jdbcType=INTEGER}
+					</when>
+					<otherwise>
+						null
+					</otherwise>
+				</choose>
+			)
+	</insert>
+
+	<update
+		id="updateAutomaticCallLog"
+		parameterType="AutomaticCallLog" >
+		
+		UPDATE t_automatic_call_log
+		SET
+			action = #{action, javaType=string, jdbcType=VARCHAR},
+			duration = #{duration, javaType=int, jdbcType=INTEGER},
+			<if test="connected != null">
+				connected = #{connected.code, javaType=string, jdbcType=CHAR},
+				start_time = #{startTime, javaType=date, jdbcType=TIMESTAMP},
+				end_time = #{endTime, javaType=date, jdbcType=TIMESTAMP},
+			</if>
+			update_time = #{updateTime, javaType=date, jdbcType=TIMESTAMP},
+			state_id = #{state.id, javaType=int, jdbcType=INTEGER}
+		WHERE
+			call_sid = #{callSid, javaType=string, jdbcType=CHAR}
+	</update>
+	
+	<select
+		id="selectAutomaticCallLogByFilter"
+		parameterType="map"
+		resultMap="automaticCallLogResult" >
+			
+		SELECT
+			<include refid="automaticCallLogColumns" />
+		FROM
+			t_automatic_call_log acl
+		<where>
+	    	<include refid="automaticCallLogFilter"/>
+	    </where>
+	    <include refid="pagingLimit"/>
+	</select>
+	
+	<select
+		id="selectAutomaticCallLog4VoiceByFilter"
+		parameterType="map"
+		resultMap="automaticCallLogResult" >
+			
+		SELECT
+			<include refid="automaticCallLogColumns" />
+		FROM
+			t_automatic_call_log acl
+		WHERE
+			acl.called_number = #{filter.calledNumber, javaType=string, jdbcType=VARCHAR, typeHandler=ReverseStringTypeHandler}
+			AND acl.type_id = #{filter.type.id, javaType=int, jdbcType=INTEGER}
+			AND acl.update_time <![CDATA[ >= ]]> #{filter.automaticCallDate.from, javaType=date, jdbcType=TIMESTAMP}
+			AND acl.update_time <![CDATA[ <= ]]> #{filter.automaticCallDate.to, javaType=date, jdbcType=TIMESTAMP}
+			ORDER BY acl.id DESC
+	</select>
+	
+	<select
+		id="countAutomaticCallLogByFilter"
+		parameterType="map"
+		resultType="int" >
+			
+		SELECT
+			COUNT(*)
+		FROM
+			t_automatic_call_log acl
+		<where>
+	    	<include refid="automaticCallLogFilter"/>
+	    </where>
+	</select>
+	
+	<select
+		id="selectAutomaticCallLogByOrderNumber"
+		parameterType="map"
+		resultMap="automaticCallLogResult" >
+			
+		SELECT
+			<include refid="automaticCallLogColumns" />
+		FROM
+			t_automatic_call_log acl
+		WHERE
+			acl.order_number = #{orderNumber, javaType=string, jdbcType=VARCHAR, typeHandler=ReverseStringTypeHandler}
+	</select>
+	
+</mapper>   
